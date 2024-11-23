@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Chess2",
+    "version": "1.0",
+    "description": "Adds the first set of features for Chess2.",
+    "permissions": ["declarativeNetRequest", "scripting", "activeTab"],
+    "host_permissions": ["*://www.chess.com/*", "://chess.com", "://lichess.org/*"],
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+                "id": "redirect_rules",
+                "enabled": true,
+                "path": "rules.json"
+            }
+        ]
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://lichess.org/*"],
+            "js": ["content.js"]
+        }
+    ]
+}

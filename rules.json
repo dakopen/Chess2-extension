@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "priority": 1,
+        "action": {
+            "type": "redirect",
+            "redirect": { "url": "https://lichess.org" }
+        },
+        "condition": {
+            "urlFilter": "*://www.chess.com/*",
+            "resourceTypes": ["main_frame"]
+        }
+    }
+]
