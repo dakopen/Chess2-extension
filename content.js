@@ -10,6 +10,10 @@ console.log(playerColor);
 if (chatPresets) {
     // Clear existing shortcuts
     chatPresets.innerHTML = "";
+    const shortcutSiblingContainer = document.createElement("div");
+    shortcutSiblingContainer.id = "chatPresetsSiblingContainer";
+    shortcutSiblingContainer.classList.add("mchat__presets");
+    chatPresets.parentNode.insertBefore(shortcutSiblingContainer, chatPresets.nextSibling);
 
     const customShortcuts = [
         { title: "google en passant", text: "gep" },
@@ -64,7 +68,7 @@ if (chatPresets) {
         });
 
         // Add the span to the container
-        chatPresets.appendChild(span);
+        shortcutSiblingContainer.appendChild(span);
     });
 }
 
