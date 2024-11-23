@@ -5,8 +5,6 @@ const board = document.querySelector(".main-board .cg-wrap");
 const boardOrientation = board.classList.contains("orientation-black");
 const playerColor = boardOrientation ? "black" : "white";
 
-console.log(playerColor);
-
 if (chatPresets) {
     // Clear existing shortcuts
     chatPresets.innerHTML = "";
@@ -224,11 +222,10 @@ function checkEnPassant(lastMoveStart, lastMoveEnd, boardSize, pawns, playerColo
     );
     const [endRow, endCol] = calculateBoardPosition(lastMoveEnd.x, lastMoveEnd.y, boardSize);
     // Ensure the move was a pawn moving two squares forward
-    if (Math.abs(endRow - startRow) === 2) {
+    if (Math.abs(endRow - startRow) === 2 && Math.abs(endCol - startCol) === 0) {
         const enPassantRow = (startRow + endRow) / 2;
         const opponentColor = playerColor === "white" ? "black" : "white";
-        const rowOffset = playerColor === "white" ? 1 : -1;
-
+        const rowOffset = 1;
         // Check adjacent files for opponent pawns
         const adjacentCols = [endCol - 1, endCol + 1].filter((col) => col >= 0 && col < 8);
 
@@ -297,6 +294,7 @@ function onComponentChange(playerColor) {
     // Check for en passant
     if (checkEnPassant(lastMoveStart, lastMoveEnd, boardSize, pawns, playerColor).enPassant) {
         removeMoveDestElements();
+        removeStraightMoveElements();
     }
 }
 
@@ -322,8 +320,29 @@ function removeMoveDestElements() {
     moveDestElements.forEach((element) => {
         element.remove();
     });
+}
 
-    console.log("Removed all move-dest oc elements.");
+function removeStraightMoveElements() {
+    // Select all "move-dest" elements
+    const moveDestElements = board.querySelectorAll(".move-dest");
+
+    // Select the currently selected square
+
+    const selectedElement = board.querySelector(".selected");
+    if (!selectedElement) {
+        return;
+    }
+
+    const selectedX = extractTranslateValues(selectedElement).x;
+
+    // Loop through "move-dest" elements and remove if their X matches the selected X
+    moveDestElements.forEach((element) => {
+        const moveX = extractTranslateValues(element).x;
+
+        if (moveX === selectedX) {
+            element.remove();
+        }
+    });
 }
 
 if (targetNode) {
