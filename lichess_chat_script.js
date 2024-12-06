@@ -51,11 +51,17 @@ if (chat && chatInput) {
 
             while (remaining.length > 0) {
                 // Find the slice point within 140 characters, stopping at the last whitespace
-                const slicePoint = remaining.lastIndexOf(" ", 140);
-                if (slicePoint === -1) {
-                    // If there is no whitespace, slice at 140 characters
+                let slicePoint;
+                if (remaining.length > 140) {
+                    slicePoint = remaining.lastIndexOf(" ", 140);
+                    if (slicePoint === -1) {
+                        // If there is no whitespace, slice at 140 characters
+                        slicePoint = 140;
+                    }
+                } else {
                     slicePoint = 140;
                 }
+
                 const slice = remaining.slice(0, slicePoint);
                 chatInput.value = slice;
                 chatInput.dispatchEvent(new Event("input", { bubbles: true }));
