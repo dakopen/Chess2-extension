@@ -4,7 +4,7 @@
  * - playerColor variable
  */
 
-const DEBUG_CHESS2 = true;
+const DEBUG_CHESS2 = false;
 
 function getIsBlackBoardOrientation() {
     const board = document.querySelector(".main-board .cg-wrap");

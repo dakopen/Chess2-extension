@@ -3,6 +3,11 @@
     "name": "Chess2",
     "version": "1.0",
     "description": "Adds the first set of features for Chess2.",
+    "icons": {
+        "16": "chess2logo.png",
+        "48": "chess2logo.png",
+        "128": "chess2logo.png"
+    },
     "permissions": ["declarativeNetRequest", "scripting", "activeTab"],
     "host_permissions": ["*://www.chess.com/*", "*://lichess.org/*"],
     "declarative_net_request": {
@@ -10,7 +15,8 @@
             {
                 "id": "redirect_rules",
                 "enabled": true,
-                "path": "rules.json"
+                "path": "rules.json",
+                "comment": "You can disable this behavior by disabling the extension for chess.c*m in the settings"
             }
         ]
     },
