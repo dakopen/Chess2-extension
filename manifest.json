@@ -8,7 +8,7 @@
         "48": "chess2logo.png",
         "128": "chess2logo.png"
     },
-    "permissions": ["declarativeNetRequest", "scripting"],
+    "permissions": ["declarativeNetRequest"],
     "host_permissions": ["*://www.chess.com/*", "*://lichess.org/*"],
     "declarative_net_request": {
         "rule_resources": [
