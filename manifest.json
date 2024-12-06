@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Chess2",
     "version": "1.0",
-    "description": "Adds the first set of features for Chess2.",
+    "description": "Bring the rules of Chess 2 to your favorite chess platform!",
     "icons": {
         "16": "chess2logo.png",
         "48": "chess2logo.png",
