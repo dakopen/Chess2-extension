@@ -38,6 +38,7 @@ if (clockContainer) {
 }
 
 const board = document.querySelector("cg-container");
+let isEnPassantPawns;
 
 function getElementWidth(element) {
     if (!element) {
@@ -107,9 +108,60 @@ function calculateBoardPosition(x, y, boardSize) {
     return [row, col];
 }
 
+function cleanupOverlay() {
+    const overlay = document.getElementById("en-passant-overlay");
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+function createOverlay(board, boardSize, enPassantPosition, enPassantPawns) {
+    cleanupOverlay(); // Cleanup any existing overlay
+
+    const squareSize = boardSize / 8; // Size of each square
+
+    // Create a new overlay element
+    const overlayContainer = document.createElement("div");
+    overlayContainer.id = "en-passant-overlay";
+    overlayContainer.style.position = "absolute";
+    overlayContainer.style.top = "0";
+    overlayContainer.style.left = "0";
+    overlayContainer.style.width = `${boardSize}px`;
+    overlayContainer.style.height = `${boardSize}px`;
+    overlayContainer.style.pointerEvents = "none"; // Allows only child overlays to handle clicks
+    overlayContainer.style.zIndex = "1000";
+
+    // loop through all the board squares
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            // skip the square if it is an en passant square
+            if (row === enPassantPosition[0] && col === enPassantPosition[1]) continue;
+            // Check if the square is on the enPassantPawns position
+            const isEnPassantPawn = enPassantPawns.some((enPassantPawn) => {
+                const [pawnRow, pawnCol] = enPassantPawn.position;
+                return row === pawnRow && col === pawnCol;
+            });
+            if (isEnPassantPawn) continue;
+
+            // Create a new overlay square
+            const squareOverlay = document.createElement("div");
+            squareOverlay.style.position = "absolute";
+            squareOverlay.style.width = `${squareSize}px`;
+            squareOverlay.style.height = `${squareSize}px`;
+            squareOverlay.style.left = `${col * squareSize}px`;
+            squareOverlay.style.top = `${row * squareSize}px`;
+            squareOverlay.style.pointerEvents = "auto"; // Blocks clicks
+            squareOverlay.style.cursor = "not-allowed"; // Visual feedback
+            overlayContainer.appendChild(squareOverlay);
+        }
+    }
+
+    // Append the overlay container to the board
+    board.appendChild(overlayContainer);
+}
+
 function checkForEnPassant(board, boardSize, lastMove) {
     const { from, to } = lastMove;
-
     // get all the pawns and their positions
     const pawns = Array.from(board.querySelectorAll('piece[class*="pawn"]'))
         .filter((pawn) => !pawn.classList.contains("ghost")) // Exclude pawns with the class "ghost"
@@ -128,13 +180,11 @@ function checkForEnPassant(board, boardSize, lastMove) {
     if (Math.abs(fromRow - toRow) === 2 && fromCol === toCol) {
         // possible en passant move:
         // check if toRow and toCol is a pawn
-
         const pawn = pawns.find((pawn) => {
             const [row, col] = pawn.position;
-            return row === fromRow && col === fromCol;
+            return row === toRow && col === toCol;
         });
         if (!pawn) return;
-
         // get adjacent fields of the pawn
         const adjacentFields = [];
         if (toCol > 0) adjacentFields.push([toRow, toCol - 1]);
@@ -150,9 +200,40 @@ function checkForEnPassant(board, boardSize, lastMove) {
                 adjacentFields.some(([adjRow, adjCol]) => row === adjRow && col === adjCol)
             );
         });
-        console.log("Adjacent opposite pawns:", adjacentOppositePawns);
+        if (adjacentOppositePawns.length === 0) return; // no pawn can en passant
+        // create an overlay so the user can only select the en passant pawns and only do en passant
+        let enPassantPosition;
+        if (fromRow === 1) {
+            enPassantPosition = [2, fromCol]; // fromRow + 1
+        } else if (fromRow === 6) {
+            enPassantPosition = [5, fromCol]; // fromRow - 1
+        } else {
+            return; // not valid
+        }
+        createOverlay(board, boardSize, enPassantPosition, adjacentOppositePawns);
+        return adjacentOppositePawns;
     }
     console.log(Math.abs(fromRow - toRow));
+}
+
+function removeImpossibleMoveDestinations(pawn) {
+    // remove all "hitting another piece diagonal" moves
+    const moveDestinations = board.querySelectorAll(".move-dest.oc");
+    // Loop through and remove each element
+    moveDestinations.forEach((element) => {
+        element.remove();
+    });
+    // remove all "going straight" moves
+    const moveDestinations2 = board.querySelectorAll(".move-dest");
+    moveDestinations2.forEach((element) => {
+        const movePosition = extractTranslateValues(element);
+        const move = calculateBoardPosition(movePosition.x, movePosition.y, getElementWidth(board));
+        console.log(move, pawn.position);
+        if (move[1] === pawn.position[1]) {
+            // same column = straight move
+            element.remove();
+        }
+    });
 }
 
 function onPlayersTurn() {
@@ -166,5 +247,16 @@ function onPlayersTurn() {
         to: extractTranslateValues(lastMoveElements[0]),
     };
 
-    checkForEnPassant(board, boardSize, lastMove);
+    isEnPassantPawns = checkForEnPassant(board, boardSize, lastMove);
+    console.log("isEnPassant", isEnPassantPawns);
+    if (isEnPassantPawns) {
+        // remove Move destinations:
+    } else {
+        cleanupOverlay();
+    }
+    // Note: There is a bug when you request a takeback after en passant I am NOT
+    // fixing it. Why would you request a takeback after en passant? Are you stupid?
 }
+
+onPlayersTurn();
+
