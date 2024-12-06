@@ -8,10 +8,14 @@ const playerColor = boardOrientation ? "black" : "white";
 if (chatPresets) {
     // Clear existing shortcuts
     chatPresets.innerHTML = "";
+}
+console.log("playerColor", playerColor);
+if (document.querySelector(".mchat__content")) {
     const shortcutSiblingContainer = document.createElement("div");
     shortcutSiblingContainer.id = "chatPresetsSiblingContainer";
-    shortcutSiblingContainer.classList.add("mchat__presets");
-    chatPresets.parentNode.insertBefore(shortcutSiblingContainer, chatPresets.nextSibling);
+    shortcutSiblingContainer.classList.add("mchat__presets2");
+    console.log(shortcutSiblingContainer);
+    document.querySelector(".mchat__content").insertBefore(shortcutSiblingContainer, null);
 
     const customShortcuts = [
         { title: "google en passant", text: "gep" },
@@ -67,6 +71,34 @@ if (chatPresets) {
 
         // Add the span to the container
         shortcutSiblingContainer.appendChild(span);
+
+        const style = document.createElement("style");
+        style.textContent = `
+    .mchat__presets2 span {
+        flex: 1 1 auto;
+        text-align: center;
+        display: block;
+        opacity: .8;
+        border: 1px solid var(--c-border);
+        border-width: 1px 1px 0 0;
+        font-size: .9em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 150ms;
+    }
+
+    .mchat__presets2 {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    flex-flow: row nowrap;
+    line-height: 1.4em;
+    user-select: none
+    }
+`;
+
+        // Append the style to the head
+        document.head.appendChild(style);
     });
 }
 
@@ -239,7 +271,7 @@ function checkEnPassant(lastMoveStart, lastMoveEnd, boardSize, pawns, playerColo
                 return (
                     pawnRow + rowOffset === enPassantRow &&
                     pawnCol === col &&
-                    p.color === playerColor
+                    p.color === playerColor // debug here and check if you have 2 possibilities what happens then.
                 );
             });
 

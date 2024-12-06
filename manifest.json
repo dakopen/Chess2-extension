@@ -4,7 +4,7 @@
     "version": "1.0",
     "description": "Adds the first set of features for Chess2.",
     "permissions": ["declarativeNetRequest", "scripting", "activeTab"],
-    "host_permissions": ["*://www.chess.com/*", "://chess.com", "://lichess.org/*"],
+    "host_permissions": ["*://www.chess.com/*", "*://lichess.org/*"],
     "declarative_net_request": {
         "rule_resources": [
             {
@@ -16,8 +16,16 @@
     },
     "content_scripts": [
         {
-            "matches": ["*://lichess.org/*"],
-            "js": ["content.js"]
+            "matches": ["https://lichess.org/*"],
+            "js": ["lichess_shared.js"]
+        },
+        {
+            "matches": ["https://lichess.org/*"],
+            "js": ["lichess_chat_script.js"]
+        },
+        {
+            "matches": ["https://lichess.org/*"],
+            "js": ["lichess_moves_script.js"]
         }
     ]
 }
