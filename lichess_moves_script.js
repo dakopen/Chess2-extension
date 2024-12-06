@@ -38,7 +38,7 @@ if (clockContainer) {
 }
 
 const board = document.querySelector("cg-container");
-let isEnPassantPawns;
+let enPassantPawns;
 
 function getElementWidth(element) {
     if (!element) {
@@ -216,7 +216,7 @@ function checkForEnPassant(board, boardSize, lastMove) {
     console.log(Math.abs(fromRow - toRow));
 }
 
-function removeImpossibleMoveDestinations(pawn) {
+function removeImpossibleMoveDestinations() {
     // remove all "hitting another piece diagonal" moves
     const moveDestinations = board.querySelectorAll(".move-dest.oc");
     // Loop through and remove each element
@@ -228,10 +228,12 @@ function removeImpossibleMoveDestinations(pawn) {
     moveDestinations2.forEach((element) => {
         const movePosition = extractTranslateValues(element);
         const move = calculateBoardPosition(movePosition.x, movePosition.y, getElementWidth(board));
-        console.log(move, pawn.position);
-        if (move[1] === pawn.position[1]) {
-            // same column = straight move
-            element.remove();
+
+        for (const pawn of enPassantPawns) {
+            if (move[1] === pawn.position[1]) {
+                // same column = straight move
+                element.remove();
+            }
         }
     });
 }
@@ -247,9 +249,9 @@ function onPlayersTurn() {
         to: extractTranslateValues(lastMoveElements[0]),
     };
 
-    isEnPassantPawns = checkForEnPassant(board, boardSize, lastMove);
-    console.log("isEnPassant", isEnPassantPawns);
-    if (isEnPassantPawns) {
+    enPassantPawns = checkForEnPassant(board, boardSize, lastMove);
+    console.log("isEnPassant", enPassantPawns);
+    if (enPassantPawns) {
         // remove Move destinations:
     } else {
         cleanupOverlay();
@@ -260,3 +262,16 @@ function onPlayersTurn() {
 
 onPlayersTurn();
 
+const boardObserver = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+        // React to changes
+        if (mutation.type === "childList" || mutation.type === "attributes") {
+            removeImpossibleMoveDestinations();
+        }
+    }
+});
+const boardObserverConfig = { childList: true, subtree: true, attributes: true };
+boardObserver.observe(board, boardObserverConfig);
+
+// it is possible to bypass by dragging pawn forward or to another field
+// but do that at your own risk (you might get bricked)
