@@ -1,6 +1,6 @@
 /**
  * This script implements the rules of Chess 2 on Lichess.
- * -
+ * - force en passant
  */
 
 let playersTurn = !!document.querySelector(".rclock-bottom .rclock-turn__text");
@@ -21,10 +21,9 @@ const observer = new MutationObserver((mutationsList) => {
             }
 
             if (playersTurn) {
-                console.log("It is your turn");
                 onPlayersTurn();
             } else {
-                console.log("It is not your turn");
+                cleanupOverlay();
             }
         }
     });
@@ -161,6 +160,9 @@ function createOverlay(board, boardSize, enPassantPosition, enPassantPawns) {
 }
 
 function checkForEnPassant(board, boardSize, lastMove) {
+    if (DEBUG_CHESS2) {
+        console.log("Checking for en passant");
+    }
     const { from, to } = lastMove;
     // get all the pawns and their positions
     const pawns = Array.from(board.querySelectorAll('piece[class*="pawn"]'))
@@ -174,17 +176,29 @@ function checkForEnPassant(board, boardSize, lastMove) {
                 color,
             };
         });
-    const [fromRow, fromCol] = calculateBoardPosition(from.x, from.y, boardSize);
 
+    const [fromRow, fromCol] = calculateBoardPosition(from.x, from.y, boardSize);
     const [toRow, toCol] = calculateBoardPosition(to.x, to.y, boardSize);
+
+    if (DEBUG_CHESS2) {
+        console.log("From", fromRow, fromCol);
+        console.log("To", toRow, toCol);
+        console.log("Pawns", pawns);
+    }
+
     if (Math.abs(fromRow - toRow) === 2 && fromCol === toCol) {
         // possible en passant move:
         // check if toRow and toCol is a pawn
         const pawn = pawns.find((pawn) => {
             const [row, col] = pawn.position;
-            return row === toRow && col === toCol;
+            // if website has been reloaded, pawns are already updated (to), otherwise use (from)
+            return (row === toRow && col === toCol) || (row === fromRow && col === toCol);
         });
         if (!pawn) return;
+        if (DEBUG_CHESS2) {
+            console.log("En passant pawn found", pawn);
+        }
+
         // get adjacent fields of the pawn
         const adjacentFields = [];
         if (toCol > 0) adjacentFields.push([toRow, toCol - 1]);
@@ -213,10 +227,10 @@ function checkForEnPassant(board, boardSize, lastMove) {
         createOverlay(board, boardSize, enPassantPosition, adjacentOppositePawns);
         return adjacentOppositePawns;
     }
-    console.log(Math.abs(fromRow - toRow));
 }
 
 function removeImpossibleMoveDestinations() {
+    if (!enPassantPawns) return;
     // remove all "hitting another piece diagonal" moves
     const moveDestinations = board.querySelectorAll(".move-dest.oc");
     // Loop through and remove each element
@@ -250,7 +264,6 @@ function onPlayersTurn() {
     };
 
     enPassantPawns = checkForEnPassant(board, boardSize, lastMove);
-    console.log("isEnPassant", enPassantPawns);
     if (enPassantPawns) {
         // remove Move destinations:
     } else {
@@ -273,5 +286,5 @@ const boardObserver = new MutationObserver((mutationsList) => {
 const boardObserverConfig = { childList: true, subtree: true, attributes: true };
 boardObserver.observe(board, boardObserverConfig);
 
-// it is possible to bypass by dragging pawn forward or to another field
+// It is possible to bypass by dragging pawn forward or to another field
 // but do that at your own risk (you might get bricked)
